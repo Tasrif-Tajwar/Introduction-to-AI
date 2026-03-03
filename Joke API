@@ -1,0 +1,62 @@
+import requests
+import random
+from colorama import Fore, init
+
+init(autoreset=True)
+
+API_URL = "https://official-joke-api.appspot.com/random_ten"
+
+def fetch_jokes(times=4): 
+    jokes = []
+    for _ in range(times): 
+        jokes.extend(requests.get(API_URL, timeout=10).json())
+
+    return jokes    
+
+def show_joke(joke):
+    print(Fore.YELLOW + "\nCategory:", joke ["type"])
+    print(Fore.GREEN + "Setup:", joke["setup"])
+    print(Fore.MAGENTA + "Punchline:", joke["punchline"])
+    print(Fore.CYAN + "-" * 50)
+
+def run():
+    try:
+        print(Fore.CYAN + "\n" + "===============================")
+        print(Fore.CYAN + "   Interactive Joke Generator   ")
+        print(Fore.CYAN + "\n" + "=======================")
+
+        jokes = fetch_jokes()
+        categories = sorted({j["type"] for j in jokes})
+                            
+        while True:
+            print(Fore.GREEN + "\nAvailable Categories: \n")  
+            for i, cat in enumerate (categories, 1):
+                  print(f"{i}, {cat}")
+            print("0. Exit") 
+
+            choice = input(Fore.YELLOW + "\nChoose a category: ")
+
+            if not choice.isdigit():
+                    print(Fore.RED + "Please enter a number.")
+                    continue  
+
+            choice = int(choice)
+
+            if choice == 0:
+                    print(Fore.CYAN + "\nThank you for using the joke generator!")
+                    break
+
+            if choice > len(categories):  
+                    print(Fore.Red + "Invalid choice")
+                    continue
+
+            selected = categories[choice - 1]
+            selected_jokes = [j for j in jokes if j["type"] == selected]
+
+            show_joke(random.choice(selected_jokes))
+
+    except requests.exceptions.RequestException:
+        print(Fore.RED + "Network error. Please check your internet connection")
+
+if __name__ == "__main__":
+   run()         
